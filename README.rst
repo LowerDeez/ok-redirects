@@ -21,7 +21,7 @@ Update INSTALLED_APPS:
 
     INSTALLED_APPS = [
         ...
-        'redirects',
+        'ok_redirects',
         ...
     ]
 
@@ -64,7 +64,7 @@ Add the redirects middleware to the MIDDLEWARE configuration:
     MIDDLEWARE = [
         ...
 
-        'redirects.middleware.RedirectMiddleware'
+        'ok_redirects.middleware.RedirectMiddleware'
     ]
 
 
