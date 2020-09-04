@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': 'redirect',
                 'verbose_name_plural': 'redirects',
-                'db_table': 'django_redirect',
+                'db_table': 'ok_redirects',
                 'ordering': ('old_path',),
                 'unique_together': {('site', 'old_path')},
             },

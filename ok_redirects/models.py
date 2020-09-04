@@ -44,7 +44,7 @@ class Redirect(models.Model):
     class Meta:
         verbose_name = _('redirect')
         verbose_name_plural = _('redirects')
-        db_table = 'ok_redirect'
+        db_table = 'ok_redirects'
         unique_together = (('site', 'old_path'),)
         ordering = ('old_path',)
 
