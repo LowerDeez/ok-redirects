@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('redirects', '0001_initial'),
+        ('ok_redirects', '0001_initial'),
     ]
 
     operations = [
