@@ -45,7 +45,12 @@ class RedirectMiddleware(MiddlewareMixin):
     def process_response(self, request, response) -> 'HttpResponse':
         path: str = request.path
 
-        if path.startswith(REDIRECTS_IGNORE_PATH_PREFIXES):
+        if isinstance(REDIRECTS_IGNORE_PATH_PREFIXES, str):
+            ignore_prefixes = (REDIRECTS_IGNORE_PATH_PREFIXES, )
+        else:
+            ignore_prefixes = tuple(REDIRECTS_IGNORE_PATH_PREFIXES)
+        
+        if path.startswith(ignore_prefixes):
             return response
 
         full_path: str = request.get_full_path()

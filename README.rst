@@ -35,7 +35,18 @@ Make migrations
 Available settings
 ==================
 
-``REDIRECTS_IGNORE_PATH_PREFIXES`` - List of path prefixes to ignore.
+``REDIRECTS_IGNORE_PATH_PREFIXES`` - Tuple of path prefixes to ignore.
+
+
+For example:
+
+.. code:: python
+
+    REDIRECTS_IGNORE_PATH_PREFIXES = (
+        '/api/v1/',
+        '/uploads/',
+        '/static/',
+    )
 
 
 Basic example to use:
