@@ -1,9 +1,8 @@
-============================
+==================================
 django-ok-redirects |PyPI version|
-============================
+==================================
 
-|Build Status| |Code Health| |Coverage| |Requirements Status| |Python Versions| |PyPI downloads| |license|
-|Project Status|
+|Build Status| |Code Health| |Python Versions| |PyPI downloads| |license| |Project Status|
 
 Simple Redirects App, which is particularly useful in the cases where you want to update some existing URLs without compromising your Website SEO.
 
@@ -43,7 +42,7 @@ Basic example to use:
 =====================
 
 Add the redirects middleware to the MIDDLEWARE configuration:
-----------------------------------------------------------------------
+-------------------------------------------------------------
 
 .. code:: python
 
@@ -70,10 +69,6 @@ Add the redirects middleware to the MIDDLEWARE configuration:
    :target: https://github.com/LowerDeez/ok-redirects/blob/master/LICENSE
 .. |PyPI downloads| image:: https://img.shields.io/pypi/dm/django-ok-redirects.svg
    :alt: PyPI downloads
-.. |Requirements Status| image:: https://requires.io/github/LowerDeez/ok-redirects/requirements.svg?branch=master
-.. |Coverage| image:: https://api.codacy.com/project/badge/Coverage/e5078569e40d428283d17efa0ebf9d19    
-   :target: https://www.codacy.com/app/LowerDeez/ok-redirects
-   :alt: Code coverage
 .. |Project Status| image:: https://img.shields.io/pypi/status/django-ok-redirects.svg
    :target: https://pypi.org/project/django-ok-redirects/  
    :alt: Project Status
