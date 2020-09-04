@@ -7,11 +7,5 @@ __all__ = (
 REDIRECTS_IGNORE_PATH_PREFIXES = getattr(
     settings,
     'REDIRECTS_IGNORE_PATH_PREFIXES',
-    (
-        '/api/v1/',
-        '/uploads/',
-        '/static/',
-        '/vuejs-translate/',
-        '/catalog/ajax/'
-    )
+    []
 )
