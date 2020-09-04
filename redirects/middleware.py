@@ -11,7 +11,10 @@ from django.http import (
 )
 from django.utils.deprecation import MiddlewareMixin
 
-from .conf import REDIRECTS_IGNORE_PATH_PREFIXES
+from .conf import (
+    REDIRECTS_IGNORE_PATH_PREFIXES,
+    REDIRECTS_USE_PERMANENT_REDIRECT
+)
 from .recievers import get_redirect
 
 if TYPE_CHECKING:
@@ -38,9 +41,10 @@ class RedirectMiddleware(MiddlewareMixin):
         super().__init__(get_response)
 
     def get_response_redirect_class(self) -> 'HttpResponseRedirectBase':
-        if settings.DEBUG:
-            return self.default_response_redirect_class
-        return HttpResponsePermanentRedirect
+        if REDIRECTS_USE_PERMANENT_REDIRECT:
+            return HttpResponsePermanentRedirect
+
+        return self.default_response_redirect_class
 
     def process_response(self, request, response) -> 'HttpResponse':
         path: str = request.path
@@ -49,7 +53,7 @@ class RedirectMiddleware(MiddlewareMixin):
             ignore_prefixes = (REDIRECTS_IGNORE_PATH_PREFIXES, )
         else:
             ignore_prefixes = tuple(REDIRECTS_IGNORE_PATH_PREFIXES)
-        
+
         if path.startswith(ignore_prefixes):
             return response
 
