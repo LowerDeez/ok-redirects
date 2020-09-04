@@ -1,0 +1,79 @@
+============================
+django-ok-redirects |PyPI version|
+============================
+
+|Build Status| |Code Health| |Coverage| |Requirements Status| |Python Versions| |PyPI downloads| |license|
+|Project Status|
+
+Simple Redirects App, which is particularly useful in the cases where you want to update some existing URLs without compromising your Website SEO.
+
+Installation
+============
+
+Install with pip:
+
+.. code:: shell
+
+    $ pip install django-ok-redirects
+
+Update INSTALLED_APPS:
+
+.. code:: python
+
+    INSTALLED_APPS = [
+        ...
+        'redirects',
+        ...
+    ]
+
+Make migrations
+
+.. code:: shell
+
+    $ python manage.py migrate
+
+
+Available settings
+==================
+
+``REDIRECTS_IGNORE_PATH_PREFIXES`` - List of path prefixes to ignore.
+
+
+Basic example to use:
+=====================
+
+Add the redirects middleware to the MIDDLEWARE configuration:
+----------------------------------------------------------------------
+
+.. code:: python
+
+    MIDDLEWARE = [
+        ...
+
+        'redirects.middleware.RedirectMiddleware'
+    ]
+
+
+.. |PyPI version| image:: https://badge.fury.io/py/django-ok-redirects.svg
+   :target: https://badge.fury.io/py/django-ok-redirects
+.. |Build Status| image:: https://travis-ci.org/LowerDeez/ok-redirects.svg?branch=master
+   :target: https://travis-ci.org/LowerDeez/ok-redirects
+   :alt: Build status
+.. |Code Health| image:: https://api.codacy.com/project/badge/Grade/e5078569e40d428283d17efa0ebf9d19
+   :target: https://www.codacy.com/app/LowerDeez/ok-redirects
+   :alt: Code health
+.. |Python Versions| image:: https://img.shields.io/pypi/pyversions/django-ok-redirects.svg
+   :target: https://pypi.org/project/django-ok-redirects/
+   :alt: Python versions
+.. |license| image:: https://img.shields.io/pypi/l/django-ok-redirects.svg
+   :alt: Software license
+   :target: https://github.com/LowerDeez/ok-redirects/blob/master/LICENSE
+.. |PyPI downloads| image:: https://img.shields.io/pypi/dm/django-ok-redirects.svg
+   :alt: PyPI downloads
+.. |Requirements Status| image:: https://requires.io/github/LowerDeez/ok-redirects/requirements.svg?branch=master
+.. |Coverage| image:: https://api.codacy.com/project/badge/Coverage/e5078569e40d428283d17efa0ebf9d19    
+   :target: https://www.codacy.com/app/LowerDeez/ok-redirects
+   :alt: Code coverage
+.. |Project Status| image:: https://img.shields.io/pypi/status/django-ok-redirects.svg
+   :target: https://pypi.org/project/django-ok-redirects/  
+   :alt: Project Status
