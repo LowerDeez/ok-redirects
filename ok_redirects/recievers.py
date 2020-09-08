@@ -10,9 +10,19 @@ __all__ = (
 )
 
 
-def get_redirect(*, site: 'Site', old_path: str) -> Union['Redirect', None]:
+def get_redirect(
+        *,
+        site: 'Site',
+        old_path: str
+) -> Union['Redirect', None]:
     try:
-        r = Redirect.objects.get(site=site, old_path=old_path, is_active=True)
+        r = (
+            Redirect.objects.get(
+                site=site,
+                old_path=old_path,
+                is_active=True
+            )
+        )
     except Redirect.DoesNotExist:
         r = None
     return r

@@ -4,22 +4,20 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ImproperlyConfigured
-from django.http import (
-    HttpResponseGone,
-    HttpResponsePermanentRedirect,
-    HttpResponseRedirect
-)
 from django.utils.deprecation import MiddlewareMixin
 
 from .conf import (
     REDIRECTS_IGNORE_PATH_PREFIXES,
-    REDIRECTS_USE_PERMANENT_REDIRECT
 )
 from .recievers import get_redirect
+from .services import (
+    increase_redirect_counter,
+    get_redirect_response
+)
 
 if TYPE_CHECKING:
     from django.contrib.sites.models import Site
-    from django.http.response import HttpResponse, HttpResponseRedirectBase
+    from django.http.response import HttpResponse
     from .models import Redirect
 
 
@@ -29,9 +27,6 @@ __all__ = (
 
 
 class RedirectMiddleware(MiddlewareMixin):
-    response_gone_class = HttpResponseGone
-    default_response_redirect_class = HttpResponseRedirect
-
     def __init__(self, get_response=None):
         if not apps.is_installed('django.contrib.sites'):
             raise ImproperlyConfigured(
@@ -39,12 +34,6 @@ class RedirectMiddleware(MiddlewareMixin):
                 "django.contrib.sites is not installed."
             )
         super().__init__(get_response)
-
-    def get_response_redirect_class(self) -> 'HttpResponseRedirectBase':
-        if REDIRECTS_USE_PERMANENT_REDIRECT:
-            return HttpResponsePermanentRedirect
-
-        return self.default_response_redirect_class
 
     def process_response(self, request, response) -> 'HttpResponse':
         path: str = request.path
@@ -78,10 +67,8 @@ class RedirectMiddleware(MiddlewareMixin):
             )
 
         if r is not None:
-            if r.new_path == '':
-                return self.response_gone_class()
-
-            return self.get_response_redirect_class()(r.new_path)
+            increase_redirect_counter(redirect=r)
+            return get_redirect_response(redirect=r)
 
         # No redirect was found. Return the response.
         return response

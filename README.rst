@@ -49,10 +49,6 @@ For example:
     )
 
 
-``REDIRECTS_USE_PERMANENT_REDIRECT`` - Use `HttpResponsePermanentRedirect` class.
-
-
-
 Basic example to use:
 =====================
 

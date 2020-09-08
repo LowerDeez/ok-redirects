@@ -8,18 +8,20 @@ class RedirectAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {
             'fields': (
+                'is_active',
                 'site',
+                'status_code',
                 ('old_path', 'is_ignore_get_params'),
                 'new_path',
-                'is_active'
+                'counter',
             ),
         }),
     )
     list_display = (
         '__str__',
         'old_path',
-        'new_path',
         'is_ignore_get_params',
+        'new_path',
         'is_active'
     )
     list_editable = (
@@ -36,3 +38,6 @@ class RedirectAdmin(admin.ModelAdmin):
         'new_path'
     )
     radio_fields = {'site': admin.VERTICAL}
+    readonly_fields = (
+        'counter',
+    )
