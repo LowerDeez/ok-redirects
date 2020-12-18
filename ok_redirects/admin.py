@@ -13,6 +13,7 @@ class RedirectAdmin(admin.ModelAdmin):
                 'status_code',
                 ('old_path', 'is_ignore_get_params'),
                 'new_path',
+                'languages',
                 'counter',
             ),
         }),

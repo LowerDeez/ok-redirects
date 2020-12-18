@@ -1,12 +1,16 @@
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
 from django.utils.translation import pgettext_lazy
 
 from .constants import REDIRECT_TYPE_CHOICES, REDIRECT_301
+from .fields import MultipleChoiceArrayField
 
 __all__ = (
     'Redirect',
 )
+
+LANGUAGES = getattr(settings, 'LANGUAGES', [])
 
 
 class Redirect(models.Model):
@@ -24,6 +28,16 @@ class Redirect(models.Model):
             "This should be an absolute path, "
             "excluding the domain name. Example: '/events/search/'."
         ),
+    )
+    languages = MultipleChoiceArrayField(
+        models.CharField(
+            max_length=2,
+            choices=LANGUAGES,
+            blank=True
+        ),
+        blank=True,
+        default=[lang[0] for lang in LANGUAGES] if LANGUAGES else list,
+        verbose_name=pgettext_lazy("ok:redirects", "Languages")
     )
     is_ignore_get_params = models.BooleanField(
         pgettext_lazy("ok:redirects", 'Ignore GET parameters'),

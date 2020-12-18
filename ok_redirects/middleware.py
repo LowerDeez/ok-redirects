@@ -1,9 +1,11 @@
+import re
 from typing import TYPE_CHECKING
 
 from django.apps import apps
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ImproperlyConfigured
+from django.shortcuts import redirect
 from django.utils.deprecation import MiddlewareMixin
 
 from .conf import (
@@ -14,6 +16,7 @@ from .services import (
     increase_redirect_counter,
     get_redirect_response
 )
+from .utils import strip_language_from_path
 
 if TYPE_CHECKING:
     from django.contrib.sites.models import Site
@@ -23,7 +26,16 @@ if TYPE_CHECKING:
 
 __all__ = (
     'RedirectMiddleware',
+    'extra_slashes_redirect_middleware'
 )
+
+REDIRECTS_EXTRA_SLASHES_REDIRECT_EXEMPT_URLS = []
+
+if hasattr(settings, 'REDIRECTS_EXTRA_SLASHES_REDIRECT_EXEMPT_URLS'):
+    REDIRECTS_EXTRA_SLASHES_REDIRECT_EXEMPT_URLS += [
+        re.compile(url)
+        for url in settings.REDIRECTS_EXTRA_SLASHES_REDIRECT_EXEMPT_URLS
+    ]
 
 
 class RedirectMiddleware(MiddlewareMixin):
@@ -36,7 +48,8 @@ class RedirectMiddleware(MiddlewareMixin):
         super().__init__(get_response)
 
     def process_response(self, request, response) -> 'HttpResponse':
-        path: str = request.path
+        language_code: str = getattr(request, 'LANGUAGE_CODE', None)
+        path: str = strip_language_from_path(path=request.path)
 
         if isinstance(REDIRECTS_IGNORE_PATH_PREFIXES, str):
             ignore_prefixes = (REDIRECTS_IGNORE_PATH_PREFIXES, )
@@ -46,7 +59,11 @@ class RedirectMiddleware(MiddlewareMixin):
         if path.startswith(ignore_prefixes):
             return response
 
-        full_path: str = request.get_full_path()
+        full_path: str = (
+            strip_language_from_path(
+                path=request.get_full_path()
+            )
+        )
         current_site: 'Site' = get_current_site(request)
 
         r: 'Redirect' = get_redirect(site=current_site, old_path=path)
@@ -56,9 +73,15 @@ class RedirectMiddleware(MiddlewareMixin):
                 r = None
 
         if r is None:
-            r: 'Redirect' = get_redirect(site=current_site, old_path=full_path)
+            r: 'Redirect' = (
+                get_redirect(site=current_site, old_path=full_path)
+            )
 
-        if r is None and settings.APPEND_SLASH and not request.path.endswith('/'):
+        if (
+                r is None
+                and settings.APPEND_SLASH
+                and not request.path.endswith('/')
+        ):
             r: 'Redirect' = (
                 get_redirect(
                     site=current_site,
@@ -67,8 +90,53 @@ class RedirectMiddleware(MiddlewareMixin):
             )
 
         if r is not None:
+            if (
+                    language_code is not None
+                    and r.languages
+                    and language_code not in r.languages
+            ):
+                return response
+
             increase_redirect_counter(redirect=r)
             return get_redirect_response(redirect=r)
 
         # No redirect was found. Return the response.
         return response
+
+
+def extra_slashes_redirect_middleware(get_response):
+    """
+    Middleware to redirect from urls with extra slashes at the end to urls with one slash
+    """
+    def middleware(request):
+        path = request.get_full_path()
+
+        if '//' in path:
+            path = re.sub(r'(/)\1+', r'\1', path)
+            return redirect(path, permanent=True)
+
+        is_url_exempt = any(
+            url.match(path.lstrip('/'))
+            for url in REDIRECTS_EXTRA_SLASHES_REDIRECT_EXEMPT_URLS
+        )
+
+        if is_url_exempt:
+            return get_response(request)
+
+        is_url_to_redirect = all([
+            not request.GET,
+            len(path) > 1,
+            not str(path).endswith('/')
+        ])
+
+        if is_url_to_redirect:
+            path += '/'
+            return redirect(path, permanent=True)
+
+        if path.endswith('?'):
+            path = path[:-1]
+            return redirect(path, permanent=True)
+
+        return get_response(request)
+
+    return middleware
