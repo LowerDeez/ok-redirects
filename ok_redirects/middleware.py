@@ -1,5 +1,5 @@
 import re
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from django.apps import apps
 from django.conf import settings
@@ -59,20 +59,22 @@ class RedirectMiddleware(MiddlewareMixin):
         if path.startswith(ignore_prefixes):
             return response
 
-        full_path: str = (
-            strip_language_from_path(
-                path=request.get_full_path()
-            )
-        )
         current_site: 'Site' = get_current_site(request)
 
-        r: 'Redirect' = get_redirect(site=current_site, old_path=path)
+        r: Optional['Redirect'] = (
+            get_redirect(site=current_site, old_path=path)
+        )
 
         if r:
             if request.GET and not r.is_ignore_get_params:
                 r = None
 
         if r is None:
+            full_path: str = (
+                strip_language_from_path(
+                    path=request.get_full_path()
+                )
+            )
             r: 'Redirect' = (
                 get_redirect(site=current_site, old_path=full_path)
             )
@@ -98,7 +100,14 @@ class RedirectMiddleware(MiddlewareMixin):
                 return response
 
             increase_redirect_counter(redirect=r)
-            return get_redirect_response(redirect=r)
+
+            return (
+                get_redirect_response(
+                    redirect=r,
+                    request=request,
+                    response=response
+                )
+            )
 
         # No redirect was found. Return the response.
         return response
@@ -106,7 +115,8 @@ class RedirectMiddleware(MiddlewareMixin):
 
 def extra_slashes_redirect_middleware(get_response):
     """
-    Middleware to redirect from urls with extra slashes at the end to urls with one slash
+    Middleware to redirect from urls with extra slashes
+    at the end to urls with one slash
     """
     def middleware(request):
         path = request.get_full_path()

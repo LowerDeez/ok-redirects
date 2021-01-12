@@ -37,7 +37,7 @@ class Redirect(models.Model):
         ),
         blank=True,
         default=[lang[0] for lang in LANGUAGES] if LANGUAGES else list,
-        verbose_name=pgettext_lazy("ok:redirects", "Languages")
+        verbose_name=pgettext_lazy("ok:redirects", "Languages to check redirect")
     )
     is_ignore_get_params = models.BooleanField(
         pgettext_lazy("ok:redirects", 'Ignore GET parameters'),
@@ -45,12 +45,22 @@ class Redirect(models.Model):
     )
     new_path = models.CharField(
         pgettext_lazy("ok:redirects", 'redirect to'),
-        max_length=250,
         blank=True,
+        max_length=250,
         help_text=pgettext_lazy(
             "ok:redirects",
             "This can be either an absolute path (as above) "
             "or a full URL starting with 'http://'."
+        ),
+    )
+    to_language = models.CharField(
+        pgettext_lazy("ok:redirects", 'to language'),
+        blank=True,
+        choices=LANGUAGES,
+        max_length=5,
+        help_text=pgettext_lazy(
+            "ok:redirects",
+            "Leave blank to redirect to the current language on the site"
         ),
     )
     status_code = models.PositiveSmallIntegerField(
