@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
+from django.urls import is_valid_path
 from django.utils.deprecation import MiddlewareMixin
 
 from .conf import (
@@ -125,6 +126,9 @@ def extra_slashes_redirect_middleware(get_response):
             path = re.sub(r'(/)\1+', r'\1', path)
             return redirect(path, permanent=True)
 
+        if not settings.APPEND_SLASH:
+            return get_response(request)
+
         is_url_exempt = any(
             url.match(path.lstrip('/'))
             for url in REDIRECTS_EXTRA_SLASHES_REDIRECT_EXEMPT_URLS
@@ -140,8 +144,14 @@ def extra_slashes_redirect_middleware(get_response):
         ])
 
         if is_url_to_redirect:
-            path += '/'
-            return redirect(path, permanent=True)
+            urlconf = getattr(request, 'urlconf', None)
+
+            # if path without slash is not valid - append slash
+            if not is_valid_path(path, urlconf):
+                path += '/'
+
+            if is_valid_path(path, urlconf):
+                return redirect(path, permanent=True)
 
         if path.endswith('?'):
             path = path[:-1]
