@@ -9,12 +9,10 @@ from .constants import REDIRECT_RESPONSE_CLASSES
 from .responses import HttpResponseGone
 
 if TYPE_CHECKING:
-    from django.http.request import HttpRequest
     from django.http.response import HttpResponse
     from .models import Redirect
 
 __all__ = (
-    'get_prefixed_default_language',
     'get_redirect_response',
     'increase_redirect_counter'
 )
@@ -31,10 +29,7 @@ def get_prefixed_default_language(*, request):
 
 
 def get_redirect_response(
-        *,
-        redirect: 'Redirect',
-        request: 'HttpRequest',
-        response: 'HttpResponse'
+        *, redirect: 'Redirect', request, response
 ) -> 'HttpResponse':
     language_code: str = getattr(request, 'LANGUAGE_CODE', None)
     path_to_redirect = redirect.new_path
@@ -47,29 +42,19 @@ def get_redirect_response(
 
     if language_code:
         is_default_language = language_code == LANGUAGE_CODE
-        prefixed_default_language = (
-            get_prefixed_default_language(request=request)
-        )
+        prefixed_default_language = get_prefixed_default_language(request=request)
 
-        if not (
-                is_default_language
-                and not prefixed_default_language
-        ):
+        if not (is_default_language and not prefixed_default_language):
             path_to_redirect = f'/{language_code}{path_to_redirect}'
 
-    # to avoid recursive redirects for same paths with or without specific language to redirect
-    language_from_path = get_language_from_path(request.path_info) or ''
+    # same paths
     if (
             request.path_info == path_to_redirect
-            and language_from_path == redirect.to_language
+            and get_language_from_path(request.path_info) == redirect.to_language
     ):
         return response
 
-    return (
-        REDIRECT_RESPONSE_CLASSES[redirect.status_code](
-            path_to_redirect
-        )
-    )
+    return REDIRECT_RESPONSE_CLASSES[redirect.status_code](path_to_redirect)
 
 
 def increase_redirect_counter(*, redirect: 'Redirect'):

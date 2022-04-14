@@ -3,10 +3,9 @@ from typing import Optional, TYPE_CHECKING
 
 from django.apps import apps
 from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
+from django.contrib.sites.models import Site
 from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
-from django.urls import is_valid_path
 from django.utils.deprecation import MiddlewareMixin
 
 from .conf import (
@@ -60,25 +59,17 @@ class RedirectMiddleware(MiddlewareMixin):
         if path.startswith(ignore_prefixes):
             return response
 
-        current_site: 'Site' = get_current_site(request)
+        current_site: 'Site' = Site.objects._get_site_by_request(request=request)
 
-        r: Optional['Redirect'] = (
-            get_redirect(site=current_site, old_path=path)
-        )
+        r: Optional['Redirect'] = get_redirect(site=current_site, old_path=path)
 
         if r:
             if request.GET and not r.is_ignore_get_params:
                 r = None
 
         if r is None:
-            full_path: str = (
-                strip_language_from_path(
-                    path=request.get_full_path()
-                )
-            )
-            r: 'Redirect' = (
-                get_redirect(site=current_site, old_path=full_path)
-            )
+            full_path: str = strip_language_from_path(path=request.get_full_path())
+            r: 'Redirect' = get_redirect(site=current_site, old_path=full_path)
 
         if (
                 r is None
@@ -102,13 +93,7 @@ class RedirectMiddleware(MiddlewareMixin):
 
             increase_redirect_counter(redirect=r)
 
-            return (
-                get_redirect_response(
-                    redirect=r,
-                    request=request,
-                    response=response
-                )
-            )
+            return get_redirect_response(redirect=r, request=request, response=response)
 
         # No redirect was found. Return the response.
         return response
@@ -126,9 +111,6 @@ def extra_slashes_redirect_middleware(get_response):
             path = re.sub(r'(/)\1+', r'\1', path)
             return redirect(path, permanent=True)
 
-        if not settings.APPEND_SLASH:
-            return get_response(request)
-
         is_url_exempt = any(
             url.match(path.lstrip('/'))
             for url in REDIRECTS_EXTRA_SLASHES_REDIRECT_EXEMPT_URLS
@@ -144,14 +126,8 @@ def extra_slashes_redirect_middleware(get_response):
         ])
 
         if is_url_to_redirect:
-            urlconf = getattr(request, 'urlconf', None)
-
-            # if path without slash is not valid - append slash
-            if not is_valid_path(path, urlconf):
-                path += '/'
-
-            if is_valid_path(path, urlconf):
-                return redirect(path, permanent=True)
+            path += '/'
+            return redirect(path, permanent=True)
 
         if path.endswith('?'):
             path = path[:-1]

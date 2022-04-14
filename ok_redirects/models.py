@@ -14,10 +14,10 @@ LANGUAGES = getattr(settings, 'LANGUAGES', [])
 
 
 class Redirect(models.Model):
-    site = models.ForeignKey(
+    sites = models.ManyToManyField(
         Site,
-        models.CASCADE,
-        verbose_name=pgettext_lazy("ok:redirects", 'site')
+        blank=True,
+        verbose_name=pgettext_lazy("ok:redirects", 'sites')
     )
     old_path = models.CharField(
         pgettext_lazy("ok:redirects", 'redirect from'),
@@ -87,7 +87,6 @@ class Redirect(models.Model):
     class Meta:
         db_table = 'ok_redirects'
         ordering = ('old_path',)
-        unique_together = (('site', 'old_path'),)
         verbose_name = pgettext_lazy("ok:redirects", 'redirect')
         verbose_name_plural = pgettext_lazy("ok:redirects", 'redirects')
 
