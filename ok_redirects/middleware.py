@@ -16,10 +16,9 @@ from .services import (
     increase_redirect_counter,
     get_redirect_response
 )
-from .utils import strip_language_from_path
+from .utils import strip_language_from_path, get_current_site
 
 if TYPE_CHECKING:
-    from django.contrib.sites.models import Site
     from django.http.response import HttpResponse
     from .models import Redirect
 
@@ -59,7 +58,7 @@ class RedirectMiddleware(MiddlewareMixin):
         if path.startswith(ignore_prefixes):
             return response
 
-        current_site: 'Site' = Site.objects._get_site_by_request(request=request)
+        current_site: 'Site' = get_current_site(request=request)
 
         r: Optional['Redirect'] = get_redirect(site=current_site, old_path=path)
 
